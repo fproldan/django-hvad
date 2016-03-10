@@ -49,13 +49,18 @@ def get_translation(instance, language_code=None):
 
     language_code = language_code or get_language()
     qs = accessor.all()
-    if qs._result_cache is not None:
+    if qs._result_cache:
         # Take advantage of translation cache
         for obj in qs:
             if obj.language_code == language_code:
                 return obj
-        raise accessor.model.DoesNotExist('%r is not translated in %r' % (instance, language_code))
-    return accessor.get(language_code=language_code)
+        return qs[0]
+    try:
+        return accessor.get(language_code=language_code)
+    except Exception:
+        # TODO: improve order of fallback translations
+        # ordered_qs = sorted(qs, key=lambda t: languages.index(t.language_code) if t in languages else len(languages))
+        return qs[0]
 
 def load_translation(instance, language, enforce=False):
     ''' Get or create a translation.

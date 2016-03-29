@@ -60,7 +60,10 @@ def get_translation(instance, language_code=None):
     except Exception:
         # TODO: improve order of fallback translations
         # ordered_qs = sorted(qs, key=lambda t: languages.index(t.language_code) if t in languages else len(languages))
+        if not qs:
+            raise accessor.model.DoesNotExist('%r is not translated in %r' % (instance, language_code))
         return qs[0]
+
 
 def load_translation(instance, language, enforce=False):
     ''' Get or create a translation.
